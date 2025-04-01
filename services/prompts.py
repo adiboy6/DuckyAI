@@ -1,3 +1,4 @@
+import re
 
 def quick_chat_system_prompt() -> str:
     return f"""
@@ -99,55 +100,143 @@ def requirements_prompt(product_name, requirement_type):
         return responsibility_matrix_prompt(product_name)
 
 def business_problem_prompt(product_name):
-    return f"""Create a detailed narrative that defines the current challenges and opportunities in the market for {0}.
-    
-    Guidelines:
-    1. Describe the existing situation and market environment, including trends, competitors, and external pressures.
-    2. Identify key problems or challenges that potential users encounter, emphasizing any gaps or shortcomings in current solutions.
-    3. Discuss the potential implications if these challenges are not addressed, highlighting both short-term and long-term consequences.
-    4. Outline the benefits and positive impact that resolving these challenges would bring to users and the overall market.
-    5. Envision how {0} can transform the current scenario, providing a forward-looking perspective that aligns with market needs.
-    """.format(product_name).strip()
+    """
+    Derive a business problem statement prompt using textbook guidelines.
+    """
+    try:
+        with open("data/textbook.txt", "r", encoding="utf-8") as f:
+            textbook_content = f.read()
+    except Exception as e:
+        textbook_content = "Textbook content not available."
+    return (
+        f"Based on the following textbook excerpt:\n\n{textbook_content}\n\n"
+        f"Please develop a detailed Business Problem Statement for the product '{product_name}'. "
+        "Include descriptions of the underlying business challenges, the market need, and any operational or financial issues that the product addresses."
+    )
+
 
 def vision_statement_prompt(product_name):
-    return f"""Create a clear and compelling vision that shows the unique future and value of {0}. 
-     
-    Guidelines: 
-    1. Define who will use this product and what they really need and want. 
-    2. Explain what makes {0} different and better than other options out there.
-    3. Show how {0} helps solve real problems that users face every day.
-    4. Use this format: For [who will use it], Who [what they need/want], The [product_name] Is [what makes it special] That [main benefits].
-    5. Make sure the vision is practical but forward-thinking.
-    6. Keep it short and memorable - something people can easily repeat.
-    7. Focus on the impact it will have, not just features.
-    8. Make it exciting but realistic - avoid empty buzzwords.
-    """.format(product_name).strip() 
- 
+    """
+    Derive a vision statement prompt using textbook guidelines.
+    """
+    try:
+        with open("data/textbook.txt", "r", encoding="utf-8") as f:
+            textbook_content = f.read()
+    except Exception as e:
+        textbook_content = "Textbook content not available."
+    return (
+        f"Using the insights provided in the following textbook excerpt:\n\n{textbook_content}\n\n"
+        f"Create a compelling Vision Statement for the product '{product_name}'. "
+        "The statement should capture the product's long-term aspirations, strategic direction, and overall impact."
+    )
+
+
 def ecosystem_map_prompt(product_name):
-    return f"""Create a complete map showing everyone and everything that connects with {0} in some way.
-     
-    Guidelines: 
-    1. List all the people and systems that interact with {0} - both direct (users, interfaces, data) and indirect (regulators, market trends, competitors).
-    2. Clearly explain what each person or system does and how they work with {0}.
-    3. Talk about outside factors like tech changes, economic issues, or new regulations that might affect how the product works.
-    4. Show the connections between different parts with simple explanations.
-    5. Include potential future connections that might become important later.
-    6. Consider both helpful connections and possible roadblocks.
-    7. Don't forget to include end users at different levels of expertise.
-    """.format(product_name).strip() 
- 
+    """
+    Derive an ecosystem map prompt using textbook guidelines.
+    """
+    try:
+        with open("data/textbook.txt", "r", encoding="utf-8") as f:
+            textbook_content = f.read()
+    except Exception as e:
+        textbook_content = "Textbook content not available."
+    return (
+        f"Referencing the guidelines below from the textbook:\n\n{textbook_content}\n\n"
+        f"Develop a detailed Ecosystem Map for the product '{product_name}'. Include all relevant stakeholders, partners, and resources that interact with or support the product."
+    )
+
+
 def responsibility_matrix_prompt(product_name):
-    return f"""Make a complete RACI Matrix that clearly shows who does what for {0}. 
-     
-    Guidelines: 
-    1. List all the key people involved with {0} (like Product Owner, Developers, QA Team, Designers, Users, etc.).
-    2. Show each person's role using: Responsible (R) = does the work, Accountable (A) = makes final decisions, Consulted (C) = gives input, Informed (I) = kept updated.
-    3. Make sure the chart clearly shows who handles each task without any confusion.
-    4. Break down responsibilities by project phases or major activities.
-    5. Make sure every important task has someone Responsible and someone Accountable.
-    6. Keep it simple - avoid having too many people in any one role.
-    7. Include notes about when roles might change or overlap in special cases.
-    8. Consider both ongoing maintenance and one-time setup tasks.
-    """.format(product_name).strip()
+    """
+    Derive a responsibility (RACI) matrix prompt using textbook guidelines.
+    """
+    try:
+        with open("data/textbook.txt", "r", encoding="utf-8") as f:
+            textbook_content = f.read()
+    except Exception as e:
+        textbook_content = "Textbook content not available."
+    return (
+        f"Based on the methodologies described in the textbook excerpt below:\n\n{textbook_content}\n\n"
+        f"Generate a Responsibility Matrix (RACI Matrix) for the product '{product_name}'. "
+        "Clearly outline the roles involved and identify who is Responsible, Accountable, Consulted, and Informed for each key task or decision."
+    )
+
+
+############################################################################################################
+# Code Generation prompts
+############################################################################################################
+
+def parse_code_and_request(user_input: str):
+    """
+    Parses the user's composite input to extract the code (delimited by triple backticks)
+    and the plain-text request. Returns (extracted_code, request_text).
+    """
+    code_blocks = re.findall(r"```(.*?)```", user_input, flags=re.DOTALL)
+    if code_blocks:
+        code_extracted = code_blocks[0].strip()
+    else:
+        code_extracted = ""
+
+    # Remove code blocks from the original input
+    request_text = re.sub(r"```.*?```", "", user_input, flags=re.DOTALL).strip()
+    return code_extracted, request_text
+
+def classify_user_prompt(user_input: str) -> str:
+    
+    return f"""
+    You are an AI classification system. A user provides a short request related to code and software development. 
+    Your task is to categorize the request into one of the following four classes:
+    Here's the prompt: {user_input}
+
+    review – if the user is asking to critique, evaluate, or highlight problems in the code.
+    modify – if the user is asking to change, alter, or update the code.
+    debug – if the user is asking to fix or troubleshoot an error in the code.
+    misc – if the user’s request does not clearly fit any of the above categories.
+
+    Output only the single category (“review,” “modify,” “debug,” or “misc”) 
+    that best represents the user’s request, based on the content of their prompt. 
+    Provide no additional explanation or commentary.
+    """.format(user_input)
+
+def review_prompt(existing_code: str) -> str:
+    # Implementing a code review prompt that includes the existing code snippet
+    review = f"""
+    Code Review for:
+    {existing_code}
+
+    1. Ensure proper naming conventions are followed.
+    2. Check for any unused imports or variables.
+    3. Verify that the code is properly documented.
+    4. Ensure that the code follows PEP 8 guidelines.
+    5. Check for any potential performance improvements.
+    """
+    return review
+
+def modify_code_prompt(user_prompt: str, existing_code: str) -> str:
+    # Implementing a code modification prompt that includes the existing code snippet
+    # and the user's requested modification
+    modified_code = f"""
+    Original Code:
+    {existing_code}
+
+    # User requested modification: {user_prompt}
+    """
+    return modified_code
+
+def debug_prompt(debug_error_string: str, existing_code: str) -> str:
+    # Implementing a debug prompt that includes the existing code snippet
+    # and suggestions for debugging based on the provided error string
+    debug_suggestions = f"""
+    Debugging Suggestions for error '{debug_error_string}' in:
+    {existing_code}
+
+    1. Check the line number mentioned in the error message.
+    2. Verify the variable names and their values.
+    3. Ensure that all necessary imports are included.
+    4. Check for any syntax errors or typos.
+    5. Use print statements or a debugger to trace the issue.
+    """
+    return debug_suggestions
+
 
 
