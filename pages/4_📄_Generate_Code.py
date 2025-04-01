@@ -53,7 +53,7 @@ with col1:
 with col2:
     response_placeholder = st.empty()
     st.write("### Your Prompt")
-    user_prompt = st.text_area("", height=60)
+    user_prompt = st.text_area("", height=68)
 
     if st.button("Send"):
         advice_placeholder = st.empty()
