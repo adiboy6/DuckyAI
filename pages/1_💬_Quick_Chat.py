@@ -16,6 +16,7 @@ helpers.sidebar.show()
 
 st.header("Quick Chat")
 st.write("Get instant answers to your software development and coding questions.")
+ask_book = st.checkbox("Use The Pragmatic Programmer as context", value=False)
 
 # Ensure the session state is initialized
 if "messages" not in st.session_state:
@@ -36,9 +37,14 @@ for message in [m for m in st.session_state.messages if m["role"] != "system"]:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
-
 # React to the user prompt
 if prompt := st.chat_input("Ask a software development or coding question..."):
+    # Append the user's question to the session state messages
     st.session_state.messages.append({"role": "user", "content": prompt})
-    asyncio.run(util.chat(st.session_state.messages, prompt))
+    
+    if ask_book:
+        asyncio.run(util.ask_book(st.session_state.messages, prompt))
+    else:
+        asyncio.run(util.chat(st.session_state.messages, prompt))
+    
     st.rerun()

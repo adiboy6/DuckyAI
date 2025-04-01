@@ -14,7 +14,9 @@ load_dotenv()
 
 openai_model = os.getenv('OPENAI_API_MODEL')
 
-def converse_sync(prompt: str, messages: List[Dict[str, str]], model="gpt-3.5-turbo") -> Tuple[str, List[Dict[str, str]]]:
+def converse_sync(prompt: str, messages: List[Dict[str, str]],
+    max_tokens: int = 1600,
+    model="gpt-3.5-turbo") -> Tuple[str, List[Dict[str, str]]]:
     client = OpenAI(
         api_key=os.getenv('OPENAI_API_KEY'),
         base_url=os.getenv('OPENAI_API_BASE_URL'))
@@ -28,6 +30,7 @@ def converse_sync(prompt: str, messages: List[Dict[str, str]], model="gpt-3.5-tu
     response = client.chat.completions.create(
         model=model,
         messages=messages,
+        max_tokens=max_tokens,
     ).choices[0].message.content
 
     # Add the assistant's message to the list of messages
@@ -48,6 +51,9 @@ async def converse(messages: List[Dict[str, str]]) -> AsyncGenerator[str, None]:
     aclient = AsyncOpenAI(api_key=os.getenv('OPENAI_API_KEY'),
                           base_url=os.getenv('OPENAI_API_BASE_URL'))
     try:
+        for message in messages:
+            if message["role"] not in {"system", "assistant", "user", "function", "tool", "developer", "evidence"}:
+                raise ValueError(f"Invalid role: {message['role']}")
         async for chunk in await aclient.chat.completions.create(model=openai_model,
                                                                  messages=messages,
                                                                  max_tokens=1600,
