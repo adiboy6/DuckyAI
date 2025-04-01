@@ -6,7 +6,8 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-data/images/
+data/images/*
+data/audio/*
 # Distribution / packaging
 build/
 dist/

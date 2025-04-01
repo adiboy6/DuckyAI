@@ -197,31 +197,31 @@ if text_submit and text_input:
                     st.audio(audio_response, format='audio/mp3', autoplay=True)
             else:
                 st.error("Failed to generate response. Please try again.")
-
-# Process any recorded audio
-if st.session_state.audio_data:
-    with result_container:
-        with st.spinner("Transcribing audio..."):
-            transcribed_text = transcribe_audio(st.session_state.audio_data)
-            if transcribed_text:
-                st.write("**Your Question:**")
-                st.write(transcribed_text)
-                
-                with st.spinner("Generating response..."):
-                    response = generate_gpt_response(transcribed_text)
-                    if response:
-                        st.write("**Assistant's Response:**")
-                        st.write(response)
-                        
-                        # Get audio response
-                        audio_response = speak_text(response)
-                        if audio_response:
-                            # Also show regular player for replay
-                            st.audio(audio_response, format='audio/mp3', autoplay=True)
-                    else:
-                        st.error("Failed to generate response. Please try again.")
-            else:
-                st.error("Failed to transcribe audio. Please try again.")
+else:
+    # Process any recorded audio
+    if st.session_state.audio_data:
+        with result_container:
+            with st.spinner("Transcribing audio..."):
+                transcribed_text = transcribe_audio(st.session_state.audio_data)
+                if transcribed_text:
+                    st.write("**Your Question:**")
+                    st.write(transcribed_text)
+                    
+                    with st.spinner("Generating response..."):
+                        response = generate_gpt_response(transcribed_text)
+                        if response:
+                            st.write("**Assistant's Response:**")
+                            st.write(response)
+                            
+                            # Get audio response
+                            audio_response = speak_text(response)
+                            if audio_response:
+                                # Also show regular player for replay
+                                st.audio(audio_response, format='audio/mp3', autoplay=True)
+                        else:
+                            st.error("Failed to generate response. Please try again.")
+                else:
+                    st.error("Failed to transcribe audio. Please try again.")
     
     # Clear the audio data
     st.session_state.audio_data = None

@@ -28,7 +28,43 @@ def transcribe_audio(audio_data):
     Returns:
         str: The transcription of the audio file.
     """
-    pass
+    temp_audio_path = None
+    try:
+        # Save the audio data to a temporary file
+        try:
+            with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as temp_audio:
+                temp_audio.write(audio_data)
+                temp_audio_path = temp_audio.name
+        except Exception as e:
+            raise RuntimeError(f"Error saving audio data to a temporary file: {e}")
+
+        # Use OpenAI's Whisper API to transcribe the audio
+        try:
+            with open(temp_audio_path, "rb") as audio_file:
+                response = client.audio.transcriptions.create(
+                    model="whisper-1",  # Specify the Whisper model
+                    file=audio_file
+                )
+        except Exception as e:
+            raise RuntimeError(f"Error calling OpenAI Whisper API: {e}")
+
+        # Extract the transcription text
+        try:
+            transcription = response.text
+            if not transcription:
+                raise ValueError("No transcription text returned by the API")
+        except Exception as e:
+            raise RuntimeError(f"Error extracting transcription text: {e}")
+
+        return transcription
+    finally:
+        # Clean up the temporary file
+        if temp_audio_path and os.path.exists(temp_audio_path):
+            try:
+                os.unlink(temp_audio_path)
+            except Exception as e:
+                print(f"Error cleaning up temporary file: {e}")
+
 
 def generate_gpt_response(prompt, messages=None):
     """
@@ -40,12 +76,16 @@ def generate_gpt_response(prompt, messages=None):
 
     Returns:
         str: The GPT-4 response.
-
-    # AI Generation Prompt:
-    # Write a Python function that takes a prompt and an optional list of context messages,
-    # sends it to GPT-4 using the OpenAI API, and returns the generated response.
     """
-    pass
+    try:
+        # Use the `converse_sync` function from llm.py to generate a response
+        response, updated_messages = llm.converse_sync(prompt=prompt, messages=messages, model="gpt-4")
+
+        # Return the response text
+        return response
+    except Exception as e:
+        raise RuntimeError(f"Error generating GPT-4 response: {e}")
+
 
 def speak_text(text, lang="en"):
     """
