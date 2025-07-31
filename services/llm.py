@@ -16,7 +16,7 @@ openai_model = os.getenv('OPENAI_API_MODEL')
 
 def converse_sync(prompt: str, messages: List[Dict[str, str]],
     max_tokens: int = 1600,
-    model="gpt-3.5-turbo") -> Tuple[str, List[Dict[str, str]]]:
+    model=None) -> Tuple[str, List[Dict[str, str]]]:
     client = OpenAI(
         api_key=os.getenv('OPENAI_API_KEY'),
         base_url=os.getenv('OPENAI_API_BASE_URL'))
@@ -30,7 +30,7 @@ def converse_sync(prompt: str, messages: List[Dict[str, str]],
     response = client.chat.completions.create(
         model=model,
         messages=messages,
-        max_tokens=max_tokens,
+        max_completion_tokens=max_tokens,
     ).choices[0].message.content
 
     # Add the assistant's message to the list of messages
@@ -56,16 +56,24 @@ async def converse(messages: List[Dict[str, str]]) -> AsyncGenerator[str, None]:
                 raise ValueError(f"Invalid role: {message['role']}")
         async for chunk in await aclient.chat.completions.create(model=openai_model,
                                                                  messages=messages,
-                                                                 max_tokens=1600,
+                                                                 max_completion_tokens=1600,
                                                                  stream=True):
-            content = chunk.choices[0].delta.content
-            if content:
-                yield content
+            if chunk.choices and len(chunk.choices) > 0:
+                content = chunk.choices[0].delta.content
+                if content:
+                    yield content
 
     except OpenAIError as e:
+        print(f"❌ API ERROR: OpenAIError - {str(e)}")
         traceback.print_exc()
-        yield f"oaiEXCEPTION {str(e)}"
+        
+        # Handle rate limit errors specifically
+        if "429" in str(e) or "Rate limit" in str(e):
+            yield f"⏰ RATE LIMIT: Please wait about 60 seconds before making another request. The GitHub AI API allows only 2 requests per minute."
+        else:
+            yield f"oaiEXCEPTION {str(e)}"
     except Exception as e:
+        print(f"❌ API ERROR: General Exception - {str(e)}")
         yield f"EXCEPTION {str(e)}"
 
 

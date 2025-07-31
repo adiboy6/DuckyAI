@@ -3,14 +3,15 @@ from typing import List, Dict, Union, Tuple
 import streamlit as st
 from streamlit.delta_generator import DeltaGenerator
 
-import services.llm
 import services.rag
+# Use the service switcher
+from services.llm_switcher import converse
 
 async def run_conversation(messages: List[Dict[str, str]], message_placeholder: Union[DeltaGenerator, None] = None) \
         -> Tuple[List[Dict[str, str]], str]:
     full_response = ""
 
-    chunks = services.llm.converse(messages)
+    chunks = converse(messages)
     chunk = await anext(chunks, "END OF CHAT")
     while chunk != "END OF CHAT":
         print(f"Received chunk from LLM service: {chunk}")
@@ -19,13 +20,30 @@ async def run_conversation(messages: List[Dict[str, str]], message_placeholder: 
             break
         full_response = full_response + chunk
 
+        # Strip triple backticks if present
+        display_response = full_response
+        if display_response.startswith("```") and display_response.endswith("```"):
+            display_response = display_response[3:-3].strip()
+        # Convert escaped newlines to real newlines
+        display_response = display_response.replace("\\n", "\n")
+        print("DEBUG: Displaying markdown response:")
+        print(repr(display_response))
+
         if message_placeholder is not None:
-            message_placeholder.code(full_response + "▌")
+            message_placeholder.markdown(display_response + "▌", unsafe_allow_html=False)
 
         chunk = await anext(chunks, "END OF CHAT")
 
+    # Final display, strip triple backticks if present
+    display_response = full_response
+    if display_response.startswith("```") and display_response.endswith("```"):
+        display_response = display_response[3:-3].strip()
+    # Convert escaped newlines to real newlines
+    display_response = display_response.replace("\\n", "\n")
+    print("DEBUG: Displaying markdown response:")
+    print(repr(display_response))
     if message_placeholder is not None:
-        message_placeholder.code(full_response)
+        message_placeholder.markdown(display_response, unsafe_allow_html=False)
 
     messages.append({"role": "assistant", "content": full_response})
     return messages, full_response
@@ -34,6 +52,7 @@ async def run_conversation(messages: List[Dict[str, str]], message_placeholder: 
 # Chat with the LLM, and update the messages list with the response.
 # Handles the chat UI and partial responses along the way.
 async def chat(messages, prompt):
+    print(f"DEBUG: Starting chat with prompt: {prompt}")
     with st.chat_message("user"):
         st.markdown(prompt)
 

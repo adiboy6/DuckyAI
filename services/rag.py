@@ -67,8 +67,19 @@ async def ask_book(query: str, return_image: bool = False):
     # nearest_neighbors.fit(normalized_embeddings)
     # Print the distance and index of the k nearest neighbor
 
-    # 2. Get embedding for user's query
-    query_embedding = await __calculate_embeddings(client, [query])
+    # 2. Get embedding for user's query (with caching)
+    # Simple cache to avoid repeated embedding calls for the same query
+    query_cache_key = f"query_embedding_{hash(query)}"
+    if hasattr(ask_book, 'query_cache') and query_cache_key in ask_book.query_cache:
+        query_embedding = ask_book.query_cache[query_cache_key]
+        print("📦 Using cached query embedding")
+    else:
+        query_embedding = await __calculate_embeddings(client, [query])
+        if not hasattr(ask_book, 'query_cache'):
+            ask_book.query_cache = {}
+        ask_book.query_cache[query_cache_key] = query_embedding
+        print("📦 Cached new query embedding")
+    
     normalized_query_embedding = normalize(query_embedding)
 
     # 3. Find most relevant context using cosine similarity
