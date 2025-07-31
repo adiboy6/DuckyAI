@@ -44,3 +44,6 @@ if generate_button:
     spinner_placeholder.empty()  # Clear the spinner
     st.write(full_response)
 
+# Add footer
+helpers.sidebar.show_footer()
+

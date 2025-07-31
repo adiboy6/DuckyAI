@@ -18,3 +18,6 @@ st.toast("Welcome to Ducky!", icon="🐥")
 
 st.markdown("Welcome to Ducky, your AI-powered software developer assistant!")
 st.write("Ducky is designed to help you deliver software faster and better.")
+
+# Add footer
+helpers.sidebar.show_footer()

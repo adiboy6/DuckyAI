@@ -58,3 +58,6 @@ with tab2:
             st.info("No images found.")  # Display message if no images are available
     except Exception as e:
         st.error(f"Error loading images: {e}")  # Handle errors gracefully
+
+# Add footer
+helpers.sidebar.show_footer()

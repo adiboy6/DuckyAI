@@ -37,3 +37,6 @@ if answer_button or answer_button_sb:
     messages.append({"role": "user", "content": learning_prompt})
     asyncio.run(helpers.util.run_conversation(messages, advice))
 
+# Add footer
+helpers.sidebar.show_footer()
+

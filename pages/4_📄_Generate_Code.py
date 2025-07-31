@@ -93,3 +93,7 @@ reset_button = st.button("↪︎ Reset")
 if reset_button:
     st.session_state.clear()  # Clear all session state keys (code editor, prompt, etc.)
     st.rerun()
+
+# Add footer
+import helpers.sidebar
+helpers.sidebar.show_footer()

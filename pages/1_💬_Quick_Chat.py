@@ -48,3 +48,6 @@ if prompt := st.chat_input("Ask a software development or coding question..."):
         asyncio.run(util.chat(st.session_state.messages, prompt))
     
     st.rerun()
+
+# Add footer
+helpers.sidebar.show_footer()

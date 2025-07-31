@@ -225,3 +225,6 @@ else:
     
     # Clear the audio data
     st.session_state.audio_data = None
+
+# Add footer
+helpers.sidebar.show_footer()
